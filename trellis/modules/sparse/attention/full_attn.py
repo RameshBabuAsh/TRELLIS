@@ -3,7 +3,7 @@ import torch
 from .. import SparseTensor
 from .. import DEBUG, ATTN
 
-if ATTN == 'xformers':
+if ATTN == 'xformers' or ATTN == 'flash_attn':
     import xformers.ops as xops
 elif ATTN == 'flash_attn':
     import flash_attn
@@ -186,7 +186,7 @@ def sparse_scaled_dot_product_attention(*args, **kwargs):
             assert k.shape[:2] == [1, sum(kv_seqlen)], f"SparseScaledDotProductSelfAttention: k shape mismatch"
             assert v.shape[:2] == [1, sum(kv_seqlen)], f"SparseScaledDotProductSelfAttention: v shape mismatch"
 
-    if ATTN == 'xformers':
+    if ATTN == 'xformers' or ATTN == 'flash_attn':
         if num_all_args == 1:
             q, k, v = qkv.unbind(dim=1)
         elif num_all_args == 2:
