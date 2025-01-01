@@ -105,7 +105,7 @@ def scaled_dot_product_attention(*args, **kwargs):
         assert len(v.shape) == 4, f"Invalid shape for v, got {v.shape}, expected [N, L, H, Co]"
         device = q.device    
 
-    if BACKEND == 'xformers':
+    if BACKEND == 'xformers' or BACKEND == 'flash_attn':
         if num_all_args == 1:
             q, k, v = qkv.unbind(dim=2)
         elif num_all_args == 2:
