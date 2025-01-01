@@ -5,7 +5,7 @@ import math
 from .. import SparseTensor
 from .. import DEBUG, ATTN
 
-if ATTN == 'xformers':
+if ATTN == 'xformers' or ATTN == 'flash_attn':
     import xformers.ops as xops
 elif ATTN == 'flash_attn':
     import flash_attn
