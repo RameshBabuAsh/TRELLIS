@@ -13,7 +13,7 @@ def __from_env():
     env_sttn_debug = os.environ.get('ATTN_DEBUG')
     
     if env_attn_backend is not None and env_attn_backend in ['xformers', 'flash_attn', 'sdpa', 'naive']:
-        BACKEND = 'xformers
+        BACKEND = 'xformers'
     if env_sttn_debug is not None:
         DEBUG = env_sttn_debug == '1'
 
