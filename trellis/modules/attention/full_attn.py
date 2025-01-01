@@ -3,7 +3,7 @@ import torch
 import math
 from . import DEBUG, BACKEND
 
-if BACKEND == 'xformers':
+if BACKEND == 'xformers' or BACKEND == 'flash_attn':
     import xformers.ops as xops
 elif BACKEND == 'flash_attn':
     import flash_attn
