@@ -4,7 +4,7 @@ import math
 from .. import SparseTensor
 from .. import DEBUG, ATTN
 
-if ATTN == 'xformers':
+if ATTN == 'xformers' or ATTN == 'flash_attn':
     import xformers.ops as xops
 elif ATTN == 'flash_attn':
     import flash_attn
@@ -114,7 +114,7 @@ def sparse_windowed_scaled_dot_product_self_attention(
             raise ValueError(f"Unknown attention module: {ATTN}")
         out = out.reshape(B * N, H, C)                              # [M, H, C]
     else:
-        if ATTN == 'xformers':
+        if ATTN == 'xformers' or ATTN == 'flash_attn':
             q, k, v = qkv_feats.unbind(dim=1)                       # [M, H, C]
             q = q.unsqueeze(0)                                      # [1, M, H, C]
             k = k.unsqueeze(0)                                      # [1, M, H, C]
