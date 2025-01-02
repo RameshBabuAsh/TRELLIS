@@ -1,19 +1,20 @@
 const fs = require('fs');
-const FormData = require('form-data');
 const path = require('path');
+const FormData = require('form-data');
 
 async function testGenerate3D() {
     const fetch = (await import('node-fetch')).default;
     const formData = new FormData();
     formData.append('product_name', 'Test Product');
-    formData.append('message_number', 123);
+    formData.append('message_number', '123');
     formData.append('image', fs.createReadStream(path.join(__dirname, 'large.jpg')));
 
     try {
-        const response = await fetch('https://9842-34-74-54-249.ngrok-free.app/generate-3d', {
+        const response = await fetch('http://0.0.0.0:5000/img-to-3d/generate-3d/', {
             method: 'POST',
             body: formData,
             headers: {
+                ...formData.getHeaders(),
                 'ngrok-skip-browser-warning': 'true'
             }
         });

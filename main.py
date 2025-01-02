@@ -76,9 +76,6 @@ async def generate_3d(
         with open(input_image_path, "wb") as f:
             shutil.copyfileobj(image.file, f)
 
-        # Upload the input image to Google Drive
-        upload_to_drive(input_image_path, folder_id, drive_service)
-
         # Open the saved image using PIL
         pil_image = Image.open(input_image_path)
 
