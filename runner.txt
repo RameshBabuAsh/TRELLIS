@@ -1,6 +1,0 @@
-# create service_account.json in tester3
-
-!git clone --recurse-submodules https://github.com/RameshBabuAsh/TRELLIS.git
-!chmod +x /kaggle/working/TRELLIS/setup.sh
-!/kaggle/working/TRELLIS/setup.sh
-!python /kaggle/working/TRELLIS/main.py

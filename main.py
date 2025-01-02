@@ -11,8 +11,7 @@ from pyngrok import ngrok
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.service_account import Credentials
-
-import os
+import sys
 
 from trellis.pipelines import TrellisImageTo3DPipeline
 from trellis.utils import render_utils, postprocessing_utils
@@ -31,14 +30,8 @@ pipeline.cuda()
 # Initialize FastAPI app
 app = FastAPI()
 
-# Google Drive setup
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-SERVICE_ACCOUNT_FILE = '/kaggle/input/tester3/service_account.json'  # Replace with your credentials file path
-credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=credentials)
-
 # Helper function to upload files to Google Drive
-def upload_to_drive(file_path, folder_id):
+def upload_to_drive(file_path, folder_id, drive_service):
     file_metadata = {
         'name': os.path.basename(file_path),
         'parents': [folder_id]
@@ -47,7 +40,7 @@ def upload_to_drive(file_path, folder_id):
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
     return file.get('id')
 
-def make_folder_public(folder_id):
+def make_folder_public(folder_id, drive_service):
     """Set the sharing permissions of a folder to public."""
     permission = {
         'type': 'anyone',
@@ -84,7 +77,7 @@ async def generate_3d(
             shutil.copyfileobj(image.file, f)
 
         # Upload the input image to Google Drive
-        upload_to_drive(input_image_path, folder_id)
+        upload_to_drive(input_image_path, folder_id, drive_service)
 
         # Open the saved image using PIL
         pil_image = Image.open(input_image_path)
@@ -109,9 +102,9 @@ async def generate_3d(
         imageio.mimsave(mesh_path, mesh_video, fps=30)
 
         # Upload videos to Google Drive
-        upload_to_drive(gaussian_path, folder_id)
-        upload_to_drive(radiance_field_path, folder_id)
-        upload_to_drive(mesh_path, folder_id)
+        upload_to_drive(gaussian_path, folder_id, drive_service)
+        upload_to_drive(radiance_field_path, folder_id, drive_service)
+        upload_to_drive(mesh_path, folder_id, drive_service)
 
         # Save GLB file
         glb_path = "/tmp/output.glb"
@@ -124,16 +117,16 @@ async def generate_3d(
         glb.export(glb_path)
 
         # Upload GLB file to Google Drive
-        upload_to_drive(glb_path, folder_id)
+        upload_to_drive(glb_path, folder_id, drive_service)
 
         # Save Gaussians as PLY files
         ply_path = "/tmp/output.ply"
         outputs['gaussian'][0].save_ply(ply_path)
 
         # Upload PLY file to Google Drive
-        upload_to_drive(ply_path, folder_id)
+        upload_to_drive(ply_path, folder_id, drive_service)
 
-        make_folder_public(folder_id)
+        make_folder_public(folder_id, drive_service)
 
         return JSONResponse({
             "message": "3D assets generated successfully",
@@ -144,9 +137,20 @@ async def generate_3d(
         return JSONResponse({"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python main.py <ngrok_auth_token> <service_account_file_path>")
+        sys.exit(1)
     
+    ngrok_auth_token = sys.argv[1]
+    service_account_file_path = sys.argv[2]
+
+    # Google Drive setup
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    credentials = Credentials.from_service_account_file(service_account_file_path, scopes=SCOPES)
+    drive_service = build('drive', 'v3', credentials=credentials)
+
     port_no = 5000
-    ngrok.set_auth_token("2eMGsPFBEKjQOATBWwYY5nIsDwM_3UGXkvcfBgeSDMxaat29S")
+    ngrok.set_auth_token(ngrok_auth_token)
     public_url = ngrok.connect(port_no).public_url
     print(f"To access the global link, please click {public_url}")
 

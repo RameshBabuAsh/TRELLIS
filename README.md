@@ -11,7 +11,105 @@
 <!-- Why This Repository -->
 ## 🤔 Why This Repository
 
-Many people don't have the resources to run TRELLIS on their local systems, so they use Kaggle or Colab. This repository is a modified version for Kaggle or Colab implementation. Users can use the commands in `runner.txt` to get their own Kaggle/Colab version of TRELLIS. A sample FastAPI is implemented in `main.py`, which users can customize in whatever way they want. Additionally, `test.js` contains a sample POST request for testing purposes.
+Many people don't have the resources to run TRELLIS on their local systems, so they use Kaggle or Colab. This repository is a modified version for Kaggle or Colab implementation. A sample FastAPI is implemented in `main.py`, which users can customize in whatever way they want. Additionally, `test.js` contains a sample POST request for testing purposes.
+
+<!-- Steps to Run in Kaggle or Colab -->
+## 🚀 Steps to Run in Kaggle or Colab
+
+### Clone the Repository
+```bash
+!git clone --recurse-submodules https://github.com/RameshBabuAsh/TRELLIS.git
+```
+
+### Give Permissions and Run `setup.sh`
+#### Kaggle
+```bash
+!chmod +x /kaggle/working/TRELLIS/setup.sh
+!/kaggle/working/TRELLIS/setup.sh
+```
+
+#### Colab
+```bash
+!chmod +x /content/TRELLIS/setup.sh
+!/content/TRELLIS/setup.sh
+```
+
+### Run `first_run.py`
+#### Kaggle
+```bash
+!python /kaggle/working/TRELLIS/first_run.py
+```
+
+#### Colab
+```bash
+!python /content/TRELLIS/first_run.py
+```
+
+### Start Writing Sample Code
+```python
+import os
+os.chdir('/content/TRELLIS') # os.chdir('/kaggle/working/TRELLIS')
+
+# Set environment variables
+os.environ['ATTN_BACKEND'] = 'xformers'   # Can be 'flash-attn' or 'xformers', default is 'flash-attn'
+os.environ['SPARSE_ATTN_BACKEND'] = 'xformers'
+os.environ['SPCONV_ALGO'] = 'native'        # Can be 'native' or 'auto', default is 'auto'.
+                                            # 'auto' is faster but will do benchmarking at the beginning.
+                                            # Recommended to set to 'native' if run only once.
+import imageio
+from PIL import Image
+from trellis.pipelines import TrellisImageTo3DPipeline
+from trellis.utils import render_utils, postprocessing_utils
+
+# Load a pipeline from a model folder or a Hugging Face model hub.
+pipeline = TrellisImageTo3DPipeline.from_pretrained("JeffreyXiang/TRELLIS-image-large")
+pipeline.cuda()
+
+os.chdir("/content") # or main entry in kaggle
+
+# Load an image
+image = Image.open('path/to/the/image')
+
+# Run the pipeline
+outputs = pipeline.run(
+    image,
+    seed=1,
+    # Optional parameters
+    # sparse_structure_sampler_params={
+    #     "steps": 12,
+    #     "cfg_strength": 7.5,
+    # },
+    # slat_sampler_params={
+    #     "steps": 12,
+    #     "cfg_strength": 3,
+    # },
+)
+# outputs is a dictionary containing generated 3D assets in different formats:
+# - outputs['gaussian']: a list of 3D Gaussians
+# - outputs['radiance_field']: a list of radiance fields
+# - outputs['mesh']: a list of meshes
+
+# Render the outputs
+video = render_utils.render_video(outputs['gaussian'][0])['color']
+imageio.mimsave("sample_gs.mp4", video, fps=30)
+video = render_utils.render_video(outputs['radiance_field'][0])['color']
+imageio.mimsave("sample_rf.mp4", video, fps=30)
+video = render_utils.render_video(outputs['mesh'][0])['normal']
+imageio.mimsave("sample_mesh.mp4", video, fps=30)
+
+# GLB files can be extracted from the outputs
+glb = postprocessing_utils.to_glb(
+    outputs['gaussian'][0],
+    outputs['mesh'][0],
+    # Optional parameters
+    simplify=0.95,          # Ratio of triangles to remove in the simplification process
+    texture_size=1024,      # Size of the texture used for the GLB
+)
+glb.export("sample.glb")
+
+# Save Gaussians as PLY files
+outputs['gaussian'][0].save_ply("sample.ply")
+```
 
 <!-- Features -->
 ## 🌟 Features
