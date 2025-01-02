@@ -33,7 +33,7 @@ app = FastAPI()
 
 # Google Drive setup
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
-SERVICE_ACCOUNT_FILE = '/kaggle/input/service_account.json'  # Replace with your credentials file path
+SERVICE_ACCOUNT_FILE = '/kaggle/input/tester3/service_account.json'  # Replace with your credentials file path
 credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=credentials)
 
