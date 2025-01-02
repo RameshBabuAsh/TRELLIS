@@ -68,6 +68,8 @@ pip install annotated-types==0.7.0 anyio==4.7.0 click==8.1.8 colorama==0.4.6 exc
 
 pip install pydantic_core==2.27.2 pyngrok==7.2.2 PyYAML==6.0.2 sniffio==1.3.1 starlette==0.41.3 typing_extensions==4.12.2 uvicorn==0.34.0
 
+pip install python-multipart
+
 export CUDA_HOME="/usr/local/cuda-11.8"
 export PATH="$CUDA_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}"
